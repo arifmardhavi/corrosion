@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom"
 import Layouts from "../components/Layouts"
 import DataTable from "react-data-table-component"
+import { useEffect, useState } from "react"
+import { addUsers, getAllUsers } from "../services/users.services"
 
 
 const Users = () => {
+    const [users, setUsers] = useState([])
     const ActionTable = (dataUsers) => {
         return (
             <div className="flex flex-col">
@@ -16,29 +19,29 @@ const Users = () => {
             </div>
         );
     };
-    const statusUSers = (dataUsers) => {
-        let IsStatus = ""
+    const roleUSers = (dataUsers) => {
+        let IsRole = ""
         let IsColor = ""
-        if (dataUsers.status === 1) {
-            IsStatus = "Admin"
+        if (dataUsers.role === 1) {
+            IsRole = "Admin"
             IsColor = "badge-error"
-        }else if (dataUsers.status === 2) {
-            IsStatus = "Operator"
+        }else if (dataUsers.role === 2) {
+            IsRole = "Operator"
             IsColor = "badge-success"
-        }else if (dataUsers.status === 3) {
-            IsStatus = "Inspector"
+        }else if (dataUsers.role === 3) {
+            IsRole = "Inspector"
             IsColor = "badge-info"
         }
         return (
             <div className={`badge ${IsColor} badge-md text-white`} >
-                {IsStatus}
+                {IsRole}
             </div>
         )
     }
     const columns = [
         {
             name: 'No',
-            selector: row => row.id,
+            selector: (row, index) => index + 1,
             sortable: true,
             width: "4rem"
         },
@@ -48,49 +51,45 @@ const Users = () => {
             sortable: true
         },
         {
-            name: 'Age',
-            selector: row => row.age,
+            name: 'Email',
+            selector: row => row.email,
             sortable: true,
-            width: "5rem"
         },
         {
-            name: 'Status',
-            selector: statusUSers,
-            sortable: true,
+            name: 'Role',
+            selector: roleUSers,
             width: "10rem"
         },
         {
             name: 'Action',
             selector: ActionTable,
-            sortable: true,
             width: "10rem"
         },
     ]
 
-    
+    useEffect(() => {
+        getAllUsers((data) => {
+            setUsers(data)
+        })
+    }, [])
 
-    const dataUsers = [
-        { id: 1, name: 'John Doe', age: 25, status: 1 },
-        { id: 2, name: 'Jane Doe', age: 30, status: 2 },
-        { id: 3, name: 'Michael Smith', age: 28, status: 3 },
-        { id: 4, name: 'Emily Johnson', age: 22, status: 2 },
-        { id: 5, name: 'Chris Evans', age: 32, status: 2 },
-        { id: 6, name: 'Olivia Brown', age: 27, status: 3 },
-        { id: 7, name: 'Sophia Wilson', age: 24, status: 3 },
-        { id: 8, name: 'Daniel Martinez', age: 29, status: 2 },
-        { id: 9, name: 'Mia Anderson', age: 26, status: 2 },
-        { id: 10, name: 'Alexander Taylor', age: 31, status: 3 },
-        { id: 11, name: 'Amelia Moore', age: 23, status: 2 },
-        { id: 12, name: 'Elijah Thomas', age: 27, status: 3 },
-        { id: 13, name: 'Isabella Jackson', age: 30, status: 3 },
-        { id: 14, name: 'William White', age: 34, status: 2 },
-        { id: 15, name: 'Ava Harris', age: 21, status: 3 },
-        { id: 16, name: 'James Lewis', age: 29, status: 3 },
-        { id: 17, name: 'Charlotte Clark', age: 25, status: 2 },
-        { id: 18, name: 'Benjamin Walker', age: 33, status: 3 },
-        { id: 19, name: 'Mason Hall', age: 26, status: 3 },
-        { id: 20, name: 'Lucas Young', age: 28, status: 2 }
-    ]
+    const handleAddUSers = (event) => {
+        event.preventDefault()
+        const data = {
+            name: event.target.name.value,
+            email: event.target.email.value,
+            password: event.target.password.value,
+            role: event.target.role.value
+        }
+        addUsers(data, () => {
+            getAllUsers((data) => {
+                setUsers(data)
+                document.getElementById('add_users').close()
+                alert('Pengguna berhasil ditambahkan')
+                
+            })
+        })
+    }
     
     return (
         <Layouts>
@@ -106,19 +105,50 @@ const Users = () => {
                 <div className="card min-h-screen shadow-md border p-2 sm:p-4">
                     <div className="card-body">
                         <div className="flex flex-row justify-between items-center" >
-                            <h2 className="card-title">Users</h2>
-                            <button className="btn btn-md btn-info text-white text-md" onClick={()=>document.getElementById('add_users').showModal()}>Tambah User</button>
-
+                            <h2 className="card-title">Pengguna</h2>
+                            <button className="btn btn-sm md:btn-md btn-info text-white text-sm md:text-md" onClick={()=>document.getElementById('add_users').showModal()}>Tambah Pengguna</button>
+                           
                             {/* MODAL ADD USERS */}
                             <dialog id="add_users" className="modal modal-bottom sm:modal-middle">
                                 <div className="modal-box">
-                                    <h3 className="font-bold text-lg">Hello!</h3>
-                                    <p className="py-4">Press ESC key or click the button below to close</p>
-                                    <div className="modal-action">
-                                    <form method="dialog">
-                                        <button className="btn">Close</button>
+                                <form method="dialog">
+                                    {/* if there is a button in form, it will close the modal */}
+                                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                                </form>
+                                    <h3 className="font-bold text-lg">Tambah Pengguna</h3>
+                                    <form method="post" onSubmit={(e) => handleAddUSers(e)}>
+                                        <div className="form-control my-2">
+                                            <label className="label">
+                                                <span className="label-text">Name</span>
+                                            </label>
+                                            <input type="text" name="name" placeholder="Name" className="input input-bordered" required />
+                                        </div>
+                                        <div className="form-control my-2">
+                                            <label className="label">
+                                                <span className="label-text">Email</span>
+                                            </label>
+                                            <input type="email" name="email" placeholder="Email" className="input input-bordered" required />
+                                        </div>
+                                        <div className="form-control my-2">
+                                            <label className="label">
+                                                <span className="label-text">Password</span>
+                                            </label>
+                                            <input type="password" name="password" placeholder="Password" className="input input-bordered" required />
+                                        </div>
+                                        <div className="form-control my-2">
+                                            <label className="label">
+                                                <span className="label-text">Role</span>
+                                            </label>
+                                            <select name="role" className="select select-bordered">
+                                                <option value="1">Admin</option>
+                                                <option value="2">Operator</option>
+                                                <option value="3" selected>Inspector</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex flex-row justify-end pt-2">
+                                            <button type="submit" className="btn btn-info text-white w-full">Submit</button>
+                                        </div>
                                     </form>
-                                    </div>
                                 </div>
                                 <form method="dialog" className="modal-backdrop">
                                     <button>close</button>
@@ -128,10 +158,11 @@ const Users = () => {
                         <div className="flex flex-col" >
                             <DataTable 
                                 columns={columns} 
-                                data={dataUsers}
+                                data={users}
                                 pagination
                                 highlightOnHover
                                 fixedHeader 
+                                
                             />
                         </div>
                     </div>

@@ -26,7 +26,7 @@ const Sidebar = () => {
     const [open, setOpen] = useState(true)
 
     return (
-        <aside className={`shadow-md h-screen duration-500 ${open ? "w-64" : "w-16"} text-blue-900 flex items-center flex-col`}>
+        <aside className={`shadow-md min-h-screen duration-500 ${open ? "w-64" : "w-16"} text-blue-900 flex items-center flex-col`}>
             {/* header */}
             <div className={`flex flex-row ${!open ? "justify-center" : "justify-between pl-9"} items-center py-3 px-3  w-full`}>
                 <Link to={'/'}><h1 className={`text-xl font-semibold ${!open && "hidden"}`}>Admin</h1></Link>
